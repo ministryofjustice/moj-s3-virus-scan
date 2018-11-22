@@ -1,0 +1,11 @@
+version: '2'
+services:
+  scanner:
+    build:
+      context: .
+    container_name: moj-s3-virus-scan_scanner
+    volumes:
+      - .:/usr/src/app
+      - ~/.aws:/root/.aws
+    ports:
+      - "4567:4567"

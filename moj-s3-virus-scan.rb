@@ -1,8 +1,13 @@
 require 'sinatra'
 require 'pry'
-require 'aws-sdk'
+require 'aws-sdk-s3'
+require 'puma'
 
-set :bind, '0.0.0.0'
+configure do
+  set :bind, '0.0.0.0'
+  set :server, :puma
+end
+
 
 Aws.config.update region: 'eu-west-1'
 

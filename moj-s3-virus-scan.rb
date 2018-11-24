@@ -11,6 +11,10 @@ end
 
 Aws.config.update region: 'eu-west-1'
 
+get '/ping' do
+  'OK'
+end
+
 get '/scan' do
   bucket_name = params['bucket']
   bucket = Aws::S3::Resource.new.bucket(bucket_name)
@@ -25,8 +29,8 @@ get '/scan' do
   cmd = ['clamdscan', tmpfile.path]
   if system(*cmd)
     $stderr.puts "STDERR: Scanning for viruses: #{cmd.join(' ')}"
-    object.put(tagging: 'moj-virus-scan=CLEAR')
-    '{"result": "CLEAR"}'
+    object.put(tagging: 'moj-virus-scan=CLEAN')
+    '{"result": "CLEAN"}'
   else
     $stderr.puts "STDERR: Scanning for viruses: #{cmd.join(' ')}"
     object.put(tagging: 'moj-virus-scan=INFECTED')

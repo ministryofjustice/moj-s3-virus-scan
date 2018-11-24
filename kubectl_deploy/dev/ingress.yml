@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: moj-s3-virus-scan-ing
+  namespace: moj-s3-virus-scan-dev
+spec:
+  rules:
+  # - host: dev.moj-s3-virus-scan.dsd.io
+  - host: moj-s3-virus-scan-dev.apps.cloud-platform-live-0.k8s.integration.dsd.io
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: moj-s3-virus-scan-svc
+          servicePort: 80

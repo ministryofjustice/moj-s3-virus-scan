@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: moj-s3-virus-scan-svc
+  namespace: moj-s3-virus-scan-dev
+  labels:
+    app: moj-s3-virus-scan-dev-svc
+spec:
+  ports:
+  - port: 80
+    name: http
+    targetPort: 4567
+  selector:
+    app: moj-s3-virus-scan

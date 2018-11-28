@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: moj-s3-virus-scan
-  namespace: moj-s3-virus-scan-dev
 spec:
   replicas: 1
   template:
@@ -12,7 +11,8 @@ spec:
     spec:
       containers:
       - name: moj-s3-virus-scan
-        image: 926803513772.dkr.ecr.eu-west-1.amazonaws.com/correspondence/moj-s3-virus-scan:latest
+        image: moj-s3-virus-scan:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 4567
         volumeMounts:

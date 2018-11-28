@@ -1,6 +1,6 @@
 FROM ruby:2.5-slim
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 EXPOSE 4567
 
@@ -25,6 +25,11 @@ RUN build_deps=' \
     && bundle install \
     && apt-get -y --auto-remove purge $build_deps
 
+
 COPY . .
+
+# Used to mount secrets from k8s.
+RUN rm -rf secrets/* \
+    && mkdir -p secrets/buckets
 
 ENTRYPOINT ["./run.sh"]

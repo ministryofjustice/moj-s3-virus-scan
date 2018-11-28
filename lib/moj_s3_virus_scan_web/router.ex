@@ -20,7 +20,9 @@ defmodule MojS3VirusScanWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", MojS3VirusScanWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", MojS3VirusScanWeb do
+    pipe_through :api
+
+    get "/scan", APIController, :scan
+  end
 end

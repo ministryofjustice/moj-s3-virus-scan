@@ -25,15 +25,16 @@ get '/scan' do
   tmpfile = Tempfile.new(['object', extname])
   tmpfile.close
   object.get(response_target: tmpfile.path)
-  File.chmod(0o0644, tmpfile.path)
+  File.chmod(0o644, tmpfile.path)
   cmd = ['clamdscan', tmpfile.path]
+  warn "Scanning for viruses: #{cmd.join(' ')}"
   if system(*cmd)
-    $stderr.puts "STDERR: Scanning for viruses: #{cmd.join(' ')}"
     object.put(tagging: 'moj-virus-scan=CLEAN')
+    warn "NO virus found for: #{tmpfile.path}"
     '{"result": "CLEAN"}'
   else
-    $stderr.puts "STDERR: Scanning for viruses: #{cmd.join(' ')}"
     object.put(tagging: 'moj-virus-scan=INFECTED')
+    warn "virus FOUND for: #{tmpfile.path}"
     '{"result": "INFECTED"}'
   end
 ensure

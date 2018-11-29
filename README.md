@@ -17,11 +17,11 @@ and these tags can be used to determine whether the file is safe to present to
 the user or not.
 
 This approach is an adaptation of the [bucket-antivirus-function approach
-presented by Upside Travel]
-(https://github.com/upsidetravel/bucket-antivirus-function), but allows the
-scanning to be performed much more quickly (1s-2s vs 10s-20s). It is
-particularly well suited to use with services that do direct uploads to S3, e.g.
-using Dropzone, but works equally well with any service that needs virus scanning.
+presented by Upside Travel](https://github.com/upsidetravel/bucket-antivirus-function),
+but allows the scanning to be performed much more quickly (1s-2s vs 10s-20s). It
+is particularly well suited to use with services that do direct uploads to S3,
+e.g. using Dropzone, but works equally well with any service that needs virus
+scanning.
 
 ## Running ##
 
@@ -64,7 +64,9 @@ Start the app like this:
 bundle exec ruby ./moj-s3-virus-scan.rb
 ```
 
-And then you can test with curl:
+And then you can test with curl, use the following command replacing bucket and
+key values with the appropriate values of the file you want scanned. You'll need
+to have credentials installed locally to access this bucket for this to work.
 
 ```
 curl http://localhost:4567/scan?bucket=your-bucket-name&key=some/file.pdf
@@ -164,7 +166,8 @@ minikube service list
 minikube service moj-s3-virus-scan
 ```
 
-Now you should be able to test scanning using curl:
+Now you should be able to test scanning using curl, use the following command
+replacing the bucket and key values with those of the file you want scanned:
 
 ```
 curl http://192.168.99.100:32424/scan?bucket=your-bucket-name&key=some/file.pdf

@@ -10,14 +10,6 @@ configure do
   set :clamscan_executable, ENV.fetch('CLAMSCAN_EXECUTABLE', 'clamscan')
 end
 
-# configure :production do
-#   set :clamscan_executable, 'clamdscan'
-# end
-
-# configure :development do
-#   set :clamscan_executable, 'clamscan'
-# end
-
 Aws.config.update region: 'eu-west-1'
 
 get '/ping' do
@@ -25,13 +17,19 @@ get '/ping' do
 end
 
 def s3_client_for_bucket(bucket_name)
-  credentials = YAML.load_file("secrets/buckets/#{bucket_name}.yml")
+  bucket_credentials_file = "secrets/buckets/#{bucket_name}.yml"
+  if File.exist?(bucket_credentials_file)
+    credentials = YAML.load_file(bucket_credentials_file)
 
-  Aws::S3::Client.new(
-    credentials: Aws::Credentials.new(credentials['aws_access_key_id'],
-                                      credentials['aws_secret_access_key']),
-    region: 'eu-west-1'
-  )
+    Aws::S3::Client.new(
+      credentials: Aws::Credentials.new(credentials['aws_access_key_id'],
+                                        credentials['aws_secret_access_key']),
+      region: 'eu-west-1'
+    )
+  else
+    # Use the default credentials which should be read from ~/.aws
+    Aws::S3::Client.new
+  end
 end
 
 def get_s3_object(client, bucket_name, key)

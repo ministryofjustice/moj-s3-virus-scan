@@ -23,13 +23,11 @@ is particularly well suited to use with services that do direct uploads to S3,
 e.g. using Dropzone, but works equally well with any service that needs virus
 scanning.
 
-## Running ##
+## Running Locally ##
 
-### Locally ###
+### Installing Dependencies ###
 
-#### Installing Dependencies ####
-
-##### Ruby #####
+#### Ruby ####
 
 This is a Sinatra app so requires Ruby, which can be installed on OSX machines
 with brew. Visit [their site](https://brew.sh) for installation instructions.
@@ -48,7 +46,7 @@ rbenv install
 gem install bundler
 ```
 
-##### ClamAV #####
+#### ClamAV ####
 
 As this app is a virus scanner, you'll also need to install ClamAV:
 
@@ -56,7 +54,7 @@ As this app is a virus scanner, you'll also need to install ClamAV:
 brew install clamav
 ```
 
-#### Starting the Application Locally ####
+### Starting the Application Locally ###
 
 Start the app like this:
 
@@ -72,9 +70,9 @@ to have credentials installed locally to access this bucket for this to work.
 curl http://localhost:4567/scan?bucket=your-bucket-name&key=some/file.pdf
 ```
 
-### Locally with Minikube
+## Running Locally with Minikube ##
 
-#### Installing and Starting Up ####
+### Installing and Starting Up ###
 
 Install [Minikube](https://github.com/kubernetes/minikube) and
 [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/).
@@ -107,16 +105,17 @@ minikube dashboard
 ```
 
 For the app to authenticate correctly to access the buckets it'll be scanning
-files in, credentials need to be provided via K8s secrets. Create the secret and
-edit it in your preferred editor (tip: this will defualt to `vi` unless you set
-your `EDITOR` environment variable, e.g. `atom`, `mate`, `subl` ... ... `emacs`).
+files in, credentials need to be provided via K8s secrets. Create the secret
+like so:
 
 ```
 kubectl create secret generic buckets
-kubectl edit secret buckets
 ```
 
-#### Creating the Buckets Secret ####
+The next section covers adding credentials to the "buckets" secret.
+
+
+### Creating the Buckets Secret ###
 
 The data section of the secret is a key-value pairing of a bucket name and short
 YAML snippet with the credentials including values for `aws_access_key_id` and
@@ -124,22 +123,44 @@ YAML snippet with the credentials including values for `aws_access_key_id` and
 secrets](https://kubernetes.io/docs/concepts/configuration/secret/) for more
 info on secrets. We do not include bucket details and credentials here as this
 is a public repo, so you'll need to prepare which bucket you need access to and
-what credentials to use for them separately. Once you have them, you can create
-them by adding them to the `stringData` section.
+what credentials to use for them separately.
+
+Ensure you have IAM user with the appropriate permissions for the bucket(s) you
+need it to access, and a set of security credentials which will need to be added
+to the app. Creation of the user is out of the scope of this README, you may
+need to whatever team handles cloud platforms for your organisation. But once
+you have a user, the policy permissions you'll need are on your bucket are:
+
+* *GetObject, GetObjectVersion, GetObjectTagging, GetObjectVersionTagging* on
+  the resource *arn:aws:s3:::<bucket_name>/\**
+* *ListAllMyBuckets*
+
+Once done, create the security credentials that will be added to the "buckets"
+secret, you'll need the `aws_access_key_id` and `aws_secret_access_key`. These
+need to be added to the "buckets" secret using the following command (tip: this
+will defualt to editing the secrets with `vi` unless you set your `EDITOR`
+environment variable, e.g. `atom`, `mate`, `subl` ... ... `emacs`):
+
+```
+kubectl edit secret buckets
+```
+
+Add a `stringData` section at the root of the YAML structure replacing
+`your-bucket-name` with the name of your bucket, and with the access credentials
+replacing `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY`.
 
 ```
 stringData:
   your-bucket-name.yml: |-
     aws_access_key_id: ACCESS_KEY_ID
-    aws_secret_access_key: AWS_SECRET_ACCESS_KEY
+    aws_secret_access_key: SECRET_ACCESS_KEY
 ```
 
-Place this at the end of the secrets file. Multiple buckets may be added. Once
-created, this secret will exist in the k8s namespace util it is destroyed, and
-can be retrieved from the cli or the dashboard, so please take appropriate
-precautions.
+Multiple buckets may be added. Once created, this secret will exist in the k8s
+namespace util it is destroyed, and can be retrieved from the cli or the
+dashboard, so please take appropriate precautions.
 
-#### Creating the Deploy ####
+### Creating the Deploy ###
 
 Once the Docker image is created it can be deployed to the Minikube cluster like
 so:
@@ -173,7 +194,7 @@ replacing the bucket and key values with those of the file you want scanned:
 curl http://192.168.99.100:32424/scan?bucket=your-bucket-name&key=some/file.pdf
 ```
 
-#### Removing / Re-deploying ####
+### Removing / Re-deploying ###
 
 There may be a better way to do this, but for now this can be accomplished by
 deleting and recreating the deploy:
@@ -185,7 +206,7 @@ kubectl create -f kubectl_deploy/local/deployment.yml
 
 Don't forget to re-build the Docker container if you make any changes to the app.
 
-## Configuring the Live App ##
+## Configuring for a New Service ##
 
 ### Scanning Application ###
 
@@ -198,8 +219,6 @@ bucket provided.
 
 To perform the scan a lambda function must be created as a bit of glue between
 the S3 bucket and the scanning application. The steps to create this are:
-
-### Creation ###
 
 1. Go to the Lambda section in the Amazon console.
 2. Create a new function:
@@ -234,9 +253,7 @@ def lambda_handler(event, context):
 This function will need to be used with the `on-create` event to work, see the
 section on configuring the S3 bucket.
 
-### S3 Bucket ###
-
-### Event Hook Configuration ###
+### S3 Bucket Event Hook ###
 
 To trigger the scan an event hook needs to be added to the S3 bucket where the
 files-to-be-scanned are created. Navigate to the bucket in the S3 console and then:
@@ -251,3 +268,9 @@ files-to-be-scanned are created. Navigate to the bucket in the S3 console and th
 
 Note: any bucket that uses this service will need to give permissions to the
 application to read object and to tag them.
+
+### S3 Bucket Permissions ###
+
+To download and tag a file in the S3 bucket, create an IAM user with the
+appropriate permissions for the bucket(s) you need it to access. See the
+[Creating the Buckets Secret](#creating-the-buckets-secret) section for more info.

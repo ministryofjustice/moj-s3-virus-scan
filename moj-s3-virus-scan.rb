@@ -62,6 +62,6 @@ get '/scan' do
       '{"result": "INFECTED"}'
     end
   ensure
-    File.unlink(local_path)
+    File.unlink(local_path) unless local_path.nil? && File.exist?(local_path)
   end
 end

@@ -88,7 +88,7 @@ Docker instance used by Minikube, which means we have to start it up and import
 the docker environment settings into the currently running shell.
 
 ```
-# Start up Minikube. See 'minikude help' for more help.
+# Start up Minikube. See 'minikube help' for more help.
 minikube start
 
 # Import Minikube's Docker environment into the current shell. This only

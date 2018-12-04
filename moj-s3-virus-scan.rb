@@ -17,13 +17,15 @@ get '/ping' do
 end
 
 def s3_client_for_bucket(bucket_name)
-  bucket_credentials_file = "secrets/buckets/#{bucket_name}"
+  bucket_credentials_file = File.join(settings.root,
+                                      "secrets/buckets/#{bucket_name}")
   if File.exist?(bucket_credentials_file)
     credentials = YAML.load_file(bucket_credentials_file)
 
+    credentials = Aws::Credentials.new(credentials['aws_access_key_id'],
+                                       credentials['aws_secret_access_key'])
     Aws::S3::Client.new(
-      credentials: Aws::Credentials.new(credentials['aws_access_key_id'],
-                                        credentials['aws_secret_access_key']),
+      credentials: credentials,
       region: 'eu-west-1'
     )
   else
@@ -37,8 +39,8 @@ def get_s3_object(client, bucket_name, key)
   tmpfile = Tempfile.new(['object', extname])
   object = Aws::S3::Object.new(bucket_name, key, client: client)
   tmpfile.write(object.data)
+  tmpfile.chmod(0o644)
   tmpfile.close
-  File.chmod(0o644, tmpfile.path)
   [tmpfile.path, object]
 end
 

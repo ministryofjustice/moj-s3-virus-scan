@@ -17,7 +17,7 @@ get '/ping' do
 end
 
 def s3_client_for_bucket(bucket_name)
-  bucket_credentials_file = "secrets/buckets/#{bucket_name}.yml"
+  bucket_credentials_file = "secrets/buckets/#{bucket_name}"
   if File.exist?(bucket_credentials_file)
     credentials = YAML.load_file(bucket_credentials_file)
 

@@ -4,8 +4,11 @@ metadata:
   name: moj-s3-virus-scan-ing
   namespace: moj-s3-virus-scan-dev
 spec:
-  rules:
+  tls:
+  - hosts:
+    - moj-s3-virus-scan-dev.apps.cloud-platform-live-0.k8s.integration.dsd.io
   # - host: dev.moj-s3-virus-scan.dsd.io
+  rules:
   - host: moj-s3-virus-scan-dev.apps.cloud-platform-live-0.k8s.integration.dsd.io
     http:
       paths:
